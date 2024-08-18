@@ -8,7 +8,7 @@
     <div class="px-6 py-4">
       <div class="font-bold text-xl line-clamp-2 mb-2">{{track.name}}</div>
       <div class="text-lg">
-        <div class="flex items-center">Duration : {{getDuration(track.duration)}}</div>
+        <div class="flex items-center">Duration : {{track.duration | customDuration}}</div>
 <!--        <div>{{track.listeners}} listeners worldwide!</div>-->
       </div>
     </div>

@@ -3,6 +3,7 @@ import {JamendoApiResponse, LastfmService} from "../services/lastfm.service";
 import {AsyncPipe, JsonPipe, NgForOf, NgIf} from "@angular/common";
 import {shareReplay} from "rxjs";
 import {NzIconDirective} from "ng-zorro-antd/icon";
+import {CustomDurationPipe} from "../custom-duration.pipe";
 
 @Component({
   selector: 'app-top-tracks',
@@ -12,7 +13,8 @@ import {NzIconDirective} from "ng-zorro-antd/icon";
     AsyncPipe,
     JsonPipe,
     NgForOf,
-    NzIconDirective
+    NzIconDirective,
+    CustomDurationPipe
   ],
   templateUrl: './top-tracks.component.html',
   styleUrl: './top-tracks.component.css'
@@ -26,11 +28,11 @@ export class TopTracksComponent implements OnInit{
   private audioPlayer : HTMLAudioElement | undefined;
   currentPlaying : number | null = null;
 
-  getDuration(duration:number){
-    let minute = Math.floor(duration/60);
-    let second = duration%60;
-    return `${minute}:${second} min`;
-  }
+  // getDuration(duration:number){
+  //   let minute = Math.floor(duration/60);
+  //   let second = duration%60;
+  //   return `${minute}:${second} min`;
+  // }
 
   playAudio(track: any) {
     if(this.audioPlayer){
