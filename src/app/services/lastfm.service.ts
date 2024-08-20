@@ -19,7 +19,7 @@ export class LastfmService {
     const payload = {
       client_id: this.clientId,
       order: 'popularity_total',
-      limit: '28',
+      limit: '30',
       format: 'json',
     };
     return this.http.get<JamendoApiResponse>(this.jamendoApiUrl, { params: payload }).pipe(map(data => data.results));
