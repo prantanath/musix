@@ -1,9 +1,10 @@
 import {Component, inject, OnInit} from '@angular/core';
 import {JamendoApiResponse, LastfmService} from "../services/lastfm.service";
 import {AsyncPipe, JsonPipe, NgForOf, NgIf} from "@angular/common";
-import {shareReplay} from "rxjs";
+import {interval, map, shareReplay, Subscription, takeWhile} from "rxjs";
 import {NzIconDirective} from "ng-zorro-antd/icon";
 import {CustomDurationPipe} from "../custom-duration.pipe";
+import {TimeFormatPipe} from "../time-format.pipe";
 
 @Component({
   selector: 'app-top-tracks',
@@ -14,44 +15,72 @@ import {CustomDurationPipe} from "../custom-duration.pipe";
     JsonPipe,
     NgForOf,
     NzIconDirective,
-    CustomDurationPipe
+    CustomDurationPipe,
+    TimeFormatPipe
   ],
   templateUrl: './top-tracks.component.html',
   styleUrl: './top-tracks.component.css'
 })
-export class TopTracksComponent implements OnInit{
+export class TopTracksComponent implements OnInit {
   // topTracks: any = [];
   lastfmService = inject(LastfmService);
   // topTracks$ = this.lastfmService.getTopTracks().pipe(shareReplay(1));
   jamendoTopTracks$ = this.lastfmService.getAllTopTracks().pipe(shareReplay(1));
 
-  private audioPlayer : HTMLAudioElement | undefined;
-  currentPlaying : number | null = null;
-
-  // getDuration(duration:number){
-  //   let minute = Math.floor(duration/60);
-  //   let second = duration%60;
-  //   return `${minute}:${second} min`;
-  // }
+  private audioPlayer: HTMLAudioElement | undefined;
+  private sub: Subscription | null = null;
+  currentPlaying: number | null = null;
+  songDuration: number = 0;
+  currentTime: number = 0;
+  progress: number = 0;
 
   playAudio(track: any) {
-    if(this.audioPlayer){
-      this.audioPlayer.pause();
+    if (this.audioPlayer) {
+      this.stopAudio();
     }
     this.audioPlayer = new Audio(track.audio);
     this.audioPlayer.play();
     this.currentPlaying = track.id;
 
-    this.audioPlayer.onended = () =>{
+    this.audioPlayer.onloadedmetadata = () => {
+      this.songDuration = this.audioPlayer?.duration || 0;
+      this.startTimer();
+    };
+    this.audioPlayer.ontimeupdate = () => {
+      this.currentTime = this.audioPlayer?.currentTime || 0;
+      this.progress = (this.currentTime / this.songDuration) * 100;
+    };
+
+    this.audioPlayer.onended = () => {
       this.currentPlaying = null;
     };
   }
 
-  pauseAudio(){
-    if(this.audioPlayer){
+  stopAudio() {
+    if (this.audioPlayer) {
       this.audioPlayer.pause();
       this.currentPlaying = null;
     }
+    this.resetTimer();
+  }
+
+  private startTimer() {
+    this.sub = interval(1000).pipe(
+      map(() => this.audioPlayer?.currentTime || 0),
+      takeWhile(currentTime => currentTime <= this.songDuration)
+    ).subscribe(currentTime => {
+      this.currentTime = currentTime;
+      this.progress = (this.currentTime / this.songDuration) * 100;
+    });
+  }
+
+  private resetTimer() {
+    if (this.sub) {
+      this.sub.unsubscribe();
+      this.sub = null;
+    }
+    this.currentTime = 0;
+    this.progress = 0;
   }
 
   ngOnInit() {
