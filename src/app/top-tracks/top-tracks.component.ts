@@ -1,5 +1,5 @@
 import {Component, inject, OnInit} from '@angular/core';
-import {JamendoApiResponse, LastfmService} from "../services/lastfm.service";
+import {LastfmService} from "../services/lastfm.service";
 import {AsyncPipe, JsonPipe, NgForOf, NgIf} from "@angular/common";
 import {interval, map, shareReplay, Subscription, takeWhile} from "rxjs";
 import {NzIconDirective} from "ng-zorro-antd/icon";
@@ -81,6 +81,15 @@ export class TopTracksComponent implements OnInit {
     }
     this.currentTime = 0;
     this.progress = 0;
+  }
+
+  seek(event : MouseEvent){
+    if(!this.audioPlayer) return;
+    const bar = event.currentTarget as HTMLElement;
+    const rect = bar.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    this.audioPlayer.currentTime = (clickX / rect.width) * this.songDuration;
+    this.progress = (this.currentTime / this.songDuration) * 100;
   }
 
   ngOnInit() {
