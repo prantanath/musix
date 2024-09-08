@@ -1,10 +1,11 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, inject, OnInit} from '@angular/core';
 import {LastfmService} from "../services/lastfm.service";
 import {AsyncPipe, JsonPipe, NgForOf, NgIf} from "@angular/common";
 import {interval, map, shareReplay, Subscription, takeWhile} from "rxjs";
 import {NzIconDirective} from "ng-zorro-antd/icon";
 import {CustomDurationPipe} from "../custom-duration.pipe";
 import {TimeFormatPipe} from "../time-format.pipe";
+import {ProgressBarComponent} from "../progress-bar/progress-bar.component";
 
 @Component({
   selector: 'app-top-tracks',
@@ -16,7 +17,8 @@ import {TimeFormatPipe} from "../time-format.pipe";
     NgForOf,
     NzIconDirective,
     CustomDurationPipe,
-    TimeFormatPipe
+    TimeFormatPipe,
+    ProgressBarComponent
   ],
   templateUrl: './top-tracks.component.html',
   styleUrl: './top-tracks.component.css'
@@ -34,6 +36,25 @@ export class TopTracksComponent implements OnInit {
   currentTime: number = 0;
   progress: number = 0;
 
+  parentData = {
+    progress: this.progress,
+    currentTime: this.currentTime,
+    currentPlaying: this.currentPlaying,
+
+  }
+
+  constructor(private cd: ChangeDetectorRef) {
+  }
+
+  makeChanges() {
+    this.parentData = {
+      currentPlaying: this.currentPlaying,
+      currentTime: this.currentTime,
+      progress: this.progress
+    };
+    this.cd.detectChanges();
+  }
+
   playAudio(track: any) {
     if (this.audioPlayer) {
       this.stopAudio();
@@ -49,6 +70,7 @@ export class TopTracksComponent implements OnInit {
     this.audioPlayer.ontimeupdate = () => {
       this.currentTime = this.audioPlayer?.currentTime || 0;
       this.progress = (this.currentTime / this.songDuration) * 100;
+      this.makeChanges();
     };
 
     this.audioPlayer.onended = () => {
@@ -71,6 +93,7 @@ export class TopTracksComponent implements OnInit {
     ).subscribe(currentTime => {
       this.currentTime = currentTime;
       this.progress = (this.currentTime / this.songDuration) * 100;
+      this.makeChanges();
     });
   }
 
@@ -81,15 +104,17 @@ export class TopTracksComponent implements OnInit {
     }
     this.currentTime = 0;
     this.progress = 0;
+    this.makeChanges();
   }
 
-  seek(event : MouseEvent){
-    if(!this.audioPlayer) return;
+  seek(event: MouseEvent) {
+    if (!this.audioPlayer) return;
     const bar = event.currentTarget as HTMLElement;
     const rect = bar.getBoundingClientRect();
     const clickX = event.clientX - rect.left;
     this.audioPlayer.currentTime = (clickX / rect.width) * this.songDuration;
     this.progress = (this.currentTime / this.songDuration) * 100;
+    this.makeChanges();
   }
 
   ngOnInit() {
