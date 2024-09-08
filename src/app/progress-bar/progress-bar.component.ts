@@ -25,7 +25,9 @@ export class ProgressBarComponent {
   @Output() seekAudio = new EventEmitter();
 
   seekSong (event: MouseEvent){
-    this.seekAudio.emit(event);
+    if(this.data.currentPlaying === this.track.id){
+      this.seekAudio.emit(event);
+    }
   }
 
 }

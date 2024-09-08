@@ -43,16 +43,12 @@ export class TopTracksComponent implements OnInit {
 
   }
 
-  constructor(private cd: ChangeDetectorRef) {
-  }
-
   makeChanges() {
     this.parentData = {
       currentPlaying: this.currentPlaying,
       currentTime: this.currentTime,
       progress: this.progress
     };
-    this.cd.detectChanges();
   }
 
   playAudio(track: any) {
@@ -93,7 +89,6 @@ export class TopTracksComponent implements OnInit {
     ).subscribe(currentTime => {
       this.currentTime = currentTime;
       this.progress = (this.currentTime / this.songDuration) * 100;
-      this.makeChanges();
     });
   }
 
@@ -104,7 +99,6 @@ export class TopTracksComponent implements OnInit {
     }
     this.currentTime = 0;
     this.progress = 0;
-    this.makeChanges();
   }
 
   seek(event: MouseEvent) {
@@ -114,7 +108,6 @@ export class TopTracksComponent implements OnInit {
     const clickX = event.clientX - rect.left;
     this.audioPlayer.currentTime = (clickX / rect.width) * this.songDuration;
     this.progress = (this.currentTime / this.songDuration) * 100;
-    this.makeChanges();
   }
 
   ngOnInit() {
